@@ -15,13 +15,20 @@ fun scan() {
 
     println("Waiting...")
 
-    repeat(15) {
+    repeat(1) {
         val p = DatagramPacket(ByteArray(2048), 2048)
         socket.receive(p)
 
-        println(p.data.infoWithHex())
+        val ip = p.address.hostAddress
+        println("IP: $ip")
+
+        val rawData = p.data.trimEnd().drop(20).dropLast(8).toByteArray()
+
+        println(rawData.infoWithHex())
     }
 }
+
+fun ByteArray.trimEnd() = dropLastWhile { it == 0.toByte() }.toByteArray()
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun ByteArray.infoWithHex() = buildString {
@@ -29,8 +36,6 @@ fun ByteArray.infoWithHex() = buildString {
 
     append(
         "BYTES (",
-        bytes.dropLastWhile { it == 0.toByte() }.size,
-        " / ",
         bytes.size.toString(),
         "): [",
     )
