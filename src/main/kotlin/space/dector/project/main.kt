@@ -2,6 +2,9 @@ package space.dector.project
 
 import java.net.DatagramPacket
 import java.net.DatagramSocket
+import java.security.MessageDigest
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 
 fun main() {
     println("It works!")
@@ -22,13 +25,31 @@ fun scan() {
         val ip = p.address.hostAddress
         println("IP: $ip")
 
-        val rawData = p.data.trimEnd().drop(20).dropLast(8).toByteArray()
+        val rawData = p.data.slice(20 until (p.length - 8))
+            .toByteArray()
 
-        println(rawData.infoWithHex())
+        val packet = decryptPacket(rawData)
+
+        println(packet)
     }
 }
 
-fun ByteArray.trimEnd() = dropLastWhile { it == 0.toByte() }.toByteArray()
+// Thanks tuya-convert!
+// https://github.com/ct-Open-Source/tuya-convert/blob/94acc3bb020361266ceb74f082e1d25c92a60345/scripts/tuya-discovery.py#L31
+private fun decryptPacket(data: ByteArray): String {
+    val key = SecretKeySpec(md5("yGAdlopoPVldABfn"), "AES")
+    val decoded = Cipher.getInstance("AES").apply {
+        init(Cipher.DECRYPT_MODE, key)
+    }.doFinal(data)
+
+    return decoded.decodeToString()
+}
+
+private fun md5(str: String): ByteArray {
+    return MessageDigest
+        .getInstance("MD5")
+        .digest(str.toByteArray())
+}
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun ByteArray.infoWithHex() = buildString {
