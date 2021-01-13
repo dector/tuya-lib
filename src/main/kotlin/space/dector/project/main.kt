@@ -38,7 +38,7 @@ fun scan() {
 // https://github.com/ct-Open-Source/tuya-convert/blob/94acc3bb020361266ceb74f082e1d25c92a60345/scripts/tuya-discovery.py#L31
 private fun decryptPacket(data: ByteArray): String {
     val key = SecretKeySpec(md5("yGAdlopoPVldABfn"), "AES")
-    val decoded = Cipher.getInstance("AES").apply {
+    val decoded = Cipher.getInstance("AES/ECB/PKCS5Padding").apply {
         init(Cipher.DECRYPT_MODE, key)
     }.doFinal(data)
 
