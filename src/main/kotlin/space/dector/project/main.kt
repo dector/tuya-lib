@@ -5,33 +5,47 @@ import java.net.DatagramSocket
 import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
+import kotlin.concurrent.thread
 
 fun main() {
-    println("It works!")
-    scan()
+    runDiscovery()
 }
 
-fun scan() {
-    val socket = DatagramSocket(6667)
-    socket.broadcast = true
-    socket.soTimeout = 15_000
+fun runDiscovery() {
+    val knownDevices = mutableListOf<String>()
 
-    println("Waiting...")
+    val t = thread {
+        val socket = DatagramSocket(6667).apply {
+            broadcast = true
+            soTimeout = 15_000
+        }
 
-    repeat(1) {
-        val p = DatagramPacket(ByteArray(2048), 2048)
-        socket.receive(p)
+        while (!Thread.interrupted()) {
+            val p = DatagramPacket(ByteArray(2048), 2048)
+            runCatching { socket.receive(p) }
+                .onSuccess {
+                    val ip = p.address.hostAddress
+                    if (!knownDevices.contains(ip)) {
+                        println("IP: $ip")
+                        knownDevices.add(ip)
 
-        val ip = p.address.hostAddress
-        println("IP: $ip")
+                        val rawData = p.data.slice(20 until (p.length - 8))
+                            .toByteArray()
 
-        val rawData = p.data.slice(20 until (p.length - 8))
-            .toByteArray()
+                        val packet = decryptPacket(rawData)
 
-        val packet = decryptPacket(rawData)
-
-        println(packet)
+                        println(packet)
+                    }
+                }
+        }
     }
+
+    runCatching {
+        t.join(30_000)
+        t.interrupt()
+    }
+
+    println("Discovered ${knownDevices.size} devices: $knownDevices")
 }
 
 // Thanks tuya-convert!
