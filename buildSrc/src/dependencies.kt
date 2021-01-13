@@ -5,6 +5,12 @@ object Deps {
     }
 }
 
+object KotlinX {
+    private const val version = "1.4.2"
+
+    const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$version"
+}
+
 object Versions {
     const val kotlin = "1.4.21"
 

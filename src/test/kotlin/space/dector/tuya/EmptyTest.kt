@@ -1,4 +1,4 @@
-package space.dector.project
+package space.dector.tuya
 
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec

@@ -5,6 +5,7 @@ plugins {
 }
 
 dependencies {
+    implementation(KotlinX.coroutines)
 
     testImplementation(Deps.kotest.runner)
     testImplementation(Deps.kotest.assertions)
