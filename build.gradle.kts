@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     implementation(KotlinX.coroutines)
+    implementation(Deps.minimalJson)
 
     testImplementation(Deps.kotest.runner)
     testImplementation(Deps.kotest.assertions)

@@ -1,4 +1,6 @@
 object Deps {
+    val minimalJson = "com.eclipsesource.minimal-json:minimal-json:0.9.5"
+
     object kotest {
         const val runner = "io.kotest:kotest-runner-junit5:${Versions.kotest}"
         const val assertions = "io.kotest:kotest-assertions-core:${Versions.kotest}"
