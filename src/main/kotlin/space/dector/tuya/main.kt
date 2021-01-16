@@ -88,7 +88,7 @@ fun sendControl(device: DetectedDevice, dps: JsonObject) {
         .set("dps", dps)
 
     // TODO detect local key
-    val localKey = aesKey(File(".localKey").readText().trim().toByteArray())
+    val localKey = aesKey(File("localKey").readText().trim().toByteArray())
     val cipher = Cipher
         .getInstance("AES")
         .apply { init(Cipher.ENCRYPT_MODE, localKey) }
@@ -139,7 +139,7 @@ fun sendControl(device: DetectedDevice, dps: JsonObject) {
     }
 
     println(">>>")
-    println(dataToSend.joinToString(" ") { it.toString(16).padStart(2, '0') })
+    println(dataToSend.joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') })
 
     val socket = Socket(device.udpIp, 6668)
     val out = socket.getOutputStream()
@@ -150,18 +150,19 @@ fun sendControl(device: DetectedDevice, dps: JsonObject) {
     val input = socket.getInputStream()
 
     var retries = 3
+    var bytesRead = 0
 
     while (retries > 0 || bytes.size <= 28) {
         runCatching {
             Thread.sleep(100)
-            input.read(bytes)
+            bytesRead = input.read(bytes)
         }
             .onFailure {
                 retries--
             }
     }
 
-    println(bytes.joinToString(" ") { it.toString(16).padStart(2, '0') })
+    println(bytes.take(bytesRead).joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') })
     println()
 
     socket.close()
