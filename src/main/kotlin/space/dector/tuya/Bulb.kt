@@ -2,7 +2,6 @@ package space.dector.tuya
 
 import com.eclipsesource.json.JsonObject
 import java.net.Socket
-import java.time.Instant
 import java.util.zip.CRC32
 import javax.crypto.Cipher
 
@@ -27,8 +26,8 @@ class Bulb(
         // CONTROL
         val commandPayload = JsonObject()
             .set("devId", deviceId)
-            .set("uid", deviceId)
-            .set("t", Instant.now().toEpochMilli().toString())
+//            .set("uid", deviceId)
+//            .set("t", Instant.now().toEpochMilli().toString())
             .set("dps", dps)
 
         val localKey = aesKey(localKey.toByteArray())
@@ -45,6 +44,7 @@ class Bulb(
                     .map { it.toUByte(16).toByte() })
             }
 
+        println("Payload: ${payload.asDumpString()}")
         check(payload.size <= 0xff)
 
         val buff = buildList<Byte> {
@@ -65,12 +65,16 @@ class Bulb(
             // Payload
             addAll(payload)
         }
+        println("Buff: ${buff.asDumpString()}")
 
         val dataToSend = buildList<Byte> {
             addAll(buff.dropLast(8))
 
             val crc = CRC32().apply {
-                update(buff.dropLast(8).toByteArray())
+                val data = buff.dropLast(8).toByteArray()
+
+                println("Data before CRC: ${data.asDumpString()}")
+                update(data)
             }.value.toString(16)
                 .chunked(2)
                 .takeLast(4)
@@ -81,7 +85,7 @@ class Bulb(
         }
 
         println(">>>")
-        println(dataToSend.joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') })
+        println(dataToSend.asDumpString())
 
         val socket = Socket(ip, 6668)
         val out = socket.getOutputStream()
@@ -89,7 +93,6 @@ class Bulb(
 
         val waitForResponse = false
         if (waitForResponse) run {
-            println("<<")
             val bytes = ByteArray(1024)
             val input = socket.getInputStream()
 
@@ -106,10 +109,16 @@ class Bulb(
                     }
             }
 
-            println(bytes.take(bytesRead).joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') })
+            println("<<")
+            println(bytes.take(bytesRead).asDumpString())
             println()
         }
 
         socket.close()
     }
 }
+
+fun ByteArray.asDumpString() = toList().asDumpString()
+
+fun Iterable<Byte>.asDumpString() = this
+    .joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') }
