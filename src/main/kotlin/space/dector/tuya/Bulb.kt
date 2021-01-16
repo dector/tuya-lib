@@ -24,11 +24,25 @@ private const val PAYLOAD_EXTENSION_SIZE = 0 +
     12  // Just 12 bytes of zeros?
 
 
-class Bulb(
+data class DeviceConfiguration(
     val ip: IpAddress,
     val deviceId: String,
     val localKey: String,
+)
+
+class Bulb(
+    val config: DeviceConfiguration,
 ) {
+
+    constructor(
+        ip: IpAddress,
+        deviceId: String,
+        localKey: String,
+    ) : this(DeviceConfiguration(
+        ip = ip,
+        deviceId = deviceId,
+        localKey = localKey,
+    ))
 
     fun turnOn() {
         sendControlCommand(JsonObject()
@@ -41,11 +55,20 @@ class Bulb(
     }
 
     private fun sendControlCommand(dps: JsonObject) {
-        val packet = buildPacket(dps)
+        val commandData = JsonObject()
+            .set("devId", config.deviceId)
+            .set("dps", dps)
+
+        // `uid` is not used in CONTROL command
+//            .set("uid", deviceId)
+
+        // `t` might be needed to make payload look different (to avoid replay)
+//            .set("t", Instant.now().toEpochMilli().toString())
+        val packet = buildPacket(commandData.toString().toByteArray())
 
 //        println(packet.asDumpString())
 
-        val socket = Socket(ip, 6668)
+        val socket = Socket(config.ip, 6668)
         val out = socket.getOutputStream()
         out.write(packet)
 
@@ -78,26 +101,16 @@ class Bulb(
     }
 
     private fun buildPacket(
-        dps: JsonObject,
+        commandData: ByteArray,
     ): ByteArray {
         val encodedCommandData = run {
             val cipher = Cipher.getInstance("AES")
                 .apply {
-                    val localKey = aesKey(localKey.toByteArray())
+                    val localKey = aesKey(config.localKey.toByteArray())
                     init(Cipher.ENCRYPT_MODE, localKey)
                 }
 
-            val commandData = JsonObject()
-                .set("devId", deviceId)
-                .set("dps", dps)
-
-            // `uid` is not used in CONTROL command
-//            .set("uid", deviceId)
-
-            // `t` might be needed to make payload look different (to avoid replay)
-//            .set("t", Instant.now().toEpochMilli().toString())
-
-            cipher.doFinal(commandData.toString().toByteArray())
+            cipher.doFinal(commandData)
         }
 
         val packet = ByteArray(encodedCommandData.size + PAYLOAD_EXTENSION_SIZE + PACKET_FRAME_SIZE)
