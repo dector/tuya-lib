@@ -12,3 +12,4 @@ build/
 # Kotlin test
 .kotlintest/
 
+localKey
