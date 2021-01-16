@@ -67,22 +67,6 @@ fun runDiscovery(
     }
 }
 
-/*
-
->>> d.turn_on()
-DEBUG:tinytuya:json_payload=b'{"devId":"00030842d4a6511ad904","uid":"00030842d4a6511ad904","t":"1610569615","dps":{"20":true}}'
-DEBUG:tinytuya:set_status received data=b'\x00\x00U\xaa\x00\x00\x00\x00\x00\x00\x00\x07\x00\x00\x00\x0c\x00\x00\x00\x00x\x93p\x91\x00\x00\xaaU'
-
->>> d.turn_off()
-DEBUG:tinytuya:json_payload=b'{"devId":"00030842d4a6511ad904","uid":"00030842d4a6511ad904","t":"1610569623","dps":{"20":false}}'
-DEBUG:tinytuya:set_status received data=b'\x00\x00U\xaa\x00\x00\x00\x00\x00\x00\x00\x07\x00\x00\x00\x0c\x00\x00\x00\x00x\x93p\x91\x00\x00\xaaU'
-
->>> d.turn_on()
-DEBUG:tinytuya:json_payload=b'{"devId":"00030842d4a6511ad904","uid":"00030842d4a6511ad904","t":"1610569624","dps":{"20":true}}'
-DEBUG:tinytuya:set_status received data=b'\x00\x00U\xaa\x00\x00\x00\x00\x00\x00\x00\x07\x00\x00\x00\x0c\x00\x00\x00\x00x\x93p\x91\x00\x00\xaaU'
-
- */
-
 fun createListenerSocket(): DatagramSocket =
     DatagramSocket(6667).apply {
         broadcast = true

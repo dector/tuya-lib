@@ -3,9 +3,13 @@
 package space.dector.tuya
 
 import com.eclipsesource.json.JsonObject
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.net.Socket
 import java.util.zip.CRC32
 import javax.crypto.Cipher
+import kotlin.time.ExperimentalTime
+import kotlin.time.milliseconds
 
 
 private const val PACKET_HEAD_SIZE = (0
@@ -45,62 +49,93 @@ class Bulb(
     ))
 
     fun turnOn() {
-        sendControlCommand(JsonObject()
-            .set("20", true))
+        send(
+            command = "07",
+            commandData = JsonObject()
+                // `uid` is not used in CONTROL command
+//            .set("uid", deviceId)
+
+                // `t` might be needed to make payload look different (to avoid replay)
+//            .set("t", Instant.now().toEpochMilli().toString())
+
+                .set("devId", config.deviceId)
+                .set("dps", JsonObject()
+                    .set("20", true)),
+        )
     }
 
     fun turnOff() {
-        sendControlCommand(JsonObject()
-            .set("20", false))
+        send(
+            command = "07",
+            commandData = JsonObject()
+                .set("devId", config.deviceId)
+                .set("dps", JsonObject()
+                    .set("20", false)),
+        )
     }
 
-    private fun sendControlCommand(dps: JsonObject) {
-        val commandData = JsonObject()
-            .set("devId", config.deviceId)
-            .set("dps", dps)
+    fun status() {
+        send(
+            command = "0a",
+            commandData = JsonObject()
+                .set("gwId", config.deviceId)
+                .set("devId", config.deviceId),
+            readResponse = true,
+        )
+    }
 
-        // `uid` is not used in CONTROL command
-//            .set("uid", deviceId)
+//    fun state() {
+//
+//    }
 
-        // `t` might be needed to make payload look different (to avoid replay)
-//            .set("t", Instant.now().toEpochMilli().toString())
-        val packet = buildPacket(commandData.toString().toByteArray())
+    @OptIn(ExperimentalTime::class)
+    private fun send(
+        command: String,
+        commandData: JsonObject,
+        readResponse: Boolean = false,
+    ) {
+        val commandHex = command.padStart(8, '0')
 
-//        println(packet.asDumpString())
+        val packet = buildPacket(
+            commandHex = commandHex,
+            commandData = commandData.toString().toByteArray(),
+        )
+
+        println(packet.asDumpString())
 
         val socket = Socket(config.ip, 6668)
         val out = socket.getOutputStream()
         out.write(packet)
 
-/*
-        val waitForResponse = false
-        if (waitForResponse) run {
-            val bytes = ByteArray(1024)
+        if (readResponse) runBlocking {
+            delay(50.milliseconds)
+
             val input = socket.getInputStream()
 
-            var retries = 3
-            var bytesRead = 0
+            var bytes = ByteArray(1024)
 
-            while (retries > 0 || bytes.size <= 28) {
+            var bytesRead = 0
+            var retries = 3
+            while (retries > 0 && bytesRead <= 28) {
                 runCatching {
-                    Thread.sleep(100)
+                    println("Reading ($retries)")
                     bytesRead = input.read(bytes)
+                }.onFailure {
+                    retries--
+                    delay(100.milliseconds)
                 }
-                    .onFailure {
-                        retries--
-                    }
             }
 
-            println("<<")
-            println(bytes.take(bytesRead).asDumpString())
+            print("<< ")
+            println(bytes.slice(0 until bytesRead).asDumpString())
             println()
         }
-*/
 
         socket.close()
     }
 
     private fun buildPacket(
+        commandHex: String,
         commandData: ByteArray,
     ): ByteArray {
         val encodedCommandData = run {
@@ -113,26 +148,41 @@ class Bulb(
             cipher.doFinal(commandData)
         }
 
-        val packet = ByteArray(encodedCommandData.size + PAYLOAD_EXTENSION_SIZE + PACKET_FRAME_SIZE)
+        val payloadExtensionSize = if (commandHex != "0000000a") PAYLOAD_EXTENSION_SIZE else 0
+
+        val packet = ByteArray(encodedCommandData.size + payloadExtensionSize + PACKET_FRAME_SIZE)
+
+        var pos = 0
 
         // Header
-        packet.write(0, "00 00 55 aa")
+        packet.write(pos, "00 00 55 aa")
+        pos += 4
+
         // Sequences?
-        packet.write(4, "00 00 00 00")
+        packet.write(pos, "00 00 00 00")
+        pos += 4
+
         // Command (CONTROL)
-        packet.write(8, "00 00 00 07")
+        packet.write(pos, commandHex)
+        pos += 4
 
-        val payloadSize = encodedCommandData.size + PAYLOAD_EXTENSION_SIZE
+        val payloadSize = encodedCommandData.size + payloadExtensionSize
         // Length
-        packet.write(12, (payloadSize + PACKET_TAIL_SIZE).toString(radix = 16).padStart(8, '0'))
+        packet.write(pos, (payloadSize + PACKET_TAIL_SIZE).toString(radix = 16).padStart(8, '0'))
+        pos += 4
 
-        // Version
-        packet.writeString(16, "3.3")
+        if (payloadExtensionSize != 0) {
+            // Version
+            packet.writeString(pos, "3.3")
+            pos += 3
 
-        // Skip 12 bytes
+            // Skip 12 bytes
+            pos += 12
+        }
 
         // AES encoded command data
-        packet.write(31, encodedCommandData)
+        packet.write(pos, encodedCommandData)
+        pos += encodedCommandData.size
 
         // CRC
         val crc = run {
@@ -142,10 +192,12 @@ class Bulb(
                 update(data)
             }.value.toUInt().toString(radix = 16).padStart(8, '0')
         }
-        packet.write(31 + encodedCommandData.size, crc)
+        packet.write(pos, crc)
+        pos += 4
 
         // Suffix
-        packet.write(packet.size - 4, "00 00 aa 55")
+        packet.write(pos, "00 00 aa 55")
+        pos += 4
 
         return packet
     }
