@@ -12,4 +12,4 @@ build/
 # Kotlin test
 .kotlintest/
 
-localKey
+data/devices/
