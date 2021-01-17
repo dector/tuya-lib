@@ -2,7 +2,9 @@
 
 package space.dector.tuya
 
+import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.JsonValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.net.Socket
@@ -56,14 +58,24 @@ class Bulb(
         )
     }
 
-    fun status() {
-        send(
+    fun status(): DeviceStatus {
+        val responseString = send(
             command = Command.DpRequest,
             commandData = JsonObject()
                 .set("gwId", config.deviceId)
                 .set("devId", config.deviceId),
-            readResponse = true,
+            expectResponse = true,
         )
+
+        val response = Json.parse(responseString).asObject()
+
+        return response["dps"].asObject()
+            .map { member ->
+                Feature.byIdWithValue(
+                    id = member.name,
+                    value = member.value,
+                )
+            }.toDeviceStatus()
     }
 
 //    fun state() {
@@ -74,21 +86,22 @@ class Bulb(
     private fun send(
         command: Command,
         commandData: JsonObject,
-        readResponse: Boolean = false,
-    ) {
+        expectResponse: Boolean = false,
+    ): String {
         val packet = Packet(
             command = command,
             payload = Packet.Payload(commandData),
             localKey = config.localKey,
         )
 
-        // println(packet.toHexString(" "))
+         println(packet.toHexString(" "))
 
         val socket = Socket(config.ip, 6668)
         val out = socket.getOutputStream()
         out.write(packet.toHexData())
 
-        if (readResponse) runBlocking {
+        var payload = ""
+        if (expectResponse) runBlocking {
             delay(50.milliseconds)
 
             val input = socket.getInputStream()
@@ -113,7 +126,7 @@ class Bulb(
             println(bytes.toHexString())
 
             println("Decoding:")
-            val payload = decodeIncomingData(
+            payload = decodeIncomingData(
                 content = bytes,
                 key = aesKey(config.localKey),
             )
@@ -122,5 +135,38 @@ class Bulb(
         }
 
         socket.close()
+
+        return payload
+    }
+}
+
+sealed class Feature {
+    data class Unknown(val id: String, val value: String) : Feature()
+    data class OnOff(val value: Boolean) : Feature()
+
+    companion object
+}
+
+fun Feature.Companion.byIdWithValue(id: String, value: JsonValue): Feature {
+    return when (id) {
+        "20" ->
+            Feature.OnOff(value.asBoolean())
+        else ->
+            Feature.Unknown(
+                id = id,
+                value = value.toString(),
+            )
+    }
+}
+
+fun List<Feature>.toDeviceStatus(): DeviceStatus = DeviceStatus(this)
+
+data class DeviceStatus(val features: List<Feature>) {
+
+    fun isOn(): Boolean {
+        return features
+            .first { it is Feature.OnOff }
+            .let { it as Feature.OnOff }
+            .value
     }
 }

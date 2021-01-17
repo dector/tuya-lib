@@ -21,7 +21,7 @@ fun ByteArray.write(position: Int, data: String) {
         it.toLowerCase().takeIf { c -> c in HEX_ALPHABET }
     }
 
-    require(filteredString.size % 2 == 0)
+    require(filteredString.size % 2 == 0) { "Expected even amount of bytes, got '${filteredString.size}'" }
 
     val bytes = filteredString.chunked(2).map {
         it.joinToString("")

@@ -80,6 +80,7 @@ private fun createFramedPayload(
     // CRC
     val crc = crc32(buf, 0 until (buf.size - PACKET_TAIL_SIZE))
         .toHexString(bytes = 4)
+    println(crc)
     buf.write(pos, crc)
     pos += 4
 
@@ -139,8 +140,20 @@ private fun prepareHexPayload(
                     12  // Just 12 bytes of zeros?
             )
 
-            extendedPayload.write(0, extension.version.id)
-            extendedPayload.write(3 + 12, encodedPayload)
+            var pos = 0
+
+            // Version
+            val version = extension.version.id.toByteArray()
+            check(version.size == 3)
+
+            extendedPayload.write(pos, version)
+            pos += 3
+
+            // Skip 12 bytes
+            pos += 12
+
+            // Payload
+            extendedPayload.write(pos, encodedPayload)
 
             extendedPayload
         }
@@ -183,8 +196,9 @@ fun Command.hex4Bytes(): String = id.padStart(8, '0')
 fun UInt.toHexString(bytes: Int): String = toInt()
     .toHexString(bytes = bytes)
 
+@ExperimentalUnsignedTypes
 fun Int.toHexString(bytes: Int): String {
-    val hexString = toString(radix = 16)
+    val hexString = toUInt().toString(radix = 16)
     val expectedLength = bytes * 2
 
     require(hexString.length <= expectedLength) {

@@ -20,12 +20,39 @@ fun main() {
     )
 
     runBlocking {
-        println("Turning ON")
-        bulb.turnOn()
+        val wasOn = run {
+            println("Checking pre-test status")
+            bulb.status().isOn()
+        }
 
         delay(1.seconds)
 
-        println("Turning OFF")
-        bulb.turnOff()
+        run {
+            println("Turning ON")
+            bulb.turnOn()
+
+            delay(0.5.seconds)
+
+            println("Is ON: ${bulb.status().isOn()}")
+        }
+
+        delay(1.seconds)
+
+        run {
+            println("Turning OFF")
+            bulb.turnOff()
+
+            delay(0.5.seconds)
+
+            println("Is ON: ${bulb.status().isOn()}")
+        }
+
+        delay(1.seconds)
+
+        if (wasOn) {
+            bulb.turnOn()
+        } else {
+            bulb.turnOff()
+        }
     }
 }
