@@ -19,6 +19,7 @@ private fun md5(str: String): ByteArray = MessageDigest
     .getInstance("MD5")
     .digest(str.toByteArray())
 
+fun aesKey(key: String): Key = aesKey(key.toByteArray())
 fun aesKey(key: ByteArray): Key = SecretKeySpec(key, "AES")
 
 fun decryptAes(key: Key, data: ByteArray) = Cipher

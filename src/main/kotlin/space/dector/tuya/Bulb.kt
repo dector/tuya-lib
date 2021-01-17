@@ -107,8 +107,17 @@ class Bulb(
                 }
             }
 
+            bytes = bytes.sliceArray(0 until bytesRead)
+
             print("<< ")
-            println(bytes.slice(0 until bytesRead).toByteArray().toHexString())
+            println(bytes.toHexString())
+
+            println("Decoding:")
+            val payload = decodeIncomingData(
+                content = bytes,
+                key = aesKey(config.localKey),
+            )
+            println("Payload: $payload")
             println()
         }
 
