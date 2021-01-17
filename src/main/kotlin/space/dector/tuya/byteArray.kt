@@ -2,11 +2,18 @@ package space.dector.tuya
 
 
 @ExperimentalUnsignedTypes
-fun ByteArray.asDumpString() = toList().asDumpString()
+fun Packet.toHexString(
+    separator: String = "",
+) = toHexData().toHexString(separator)
 
 @ExperimentalUnsignedTypes
-fun Iterable<Byte>.asDumpString() = this
-    .joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') }
+fun ByteArray.toHexString(
+    separator: String = "",
+) = joinToString(separator) {
+    it.toUByte()
+        .toString(16)
+        .padStart(2, '0')
+}
 
 @ExperimentalUnsignedTypes
 fun ByteArray.write(position: Int, data: String) {
