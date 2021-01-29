@@ -18,6 +18,7 @@ fun main() {
     runDiscovery()
 }
 
+@OptIn(ExperimentalTime::class)
 fun runDiscovery(
     timeout: Duration = 30.seconds,
 ) = runBlocking {
@@ -72,8 +73,6 @@ fun createListenerSocket(): DatagramSocket =
         broadcast = true
         soTimeout = 10_000
     }
-
-typealias IpAddress = String
 
 data class DetectedDevice(
     val udpIp: IpAddress,

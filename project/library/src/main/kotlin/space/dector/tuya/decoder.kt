@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec
 
 private val key = aesKey(md5("yGAdlopoPVldABfn"))
 
-internal fun decryptPacket(data: ByteArray): String =
+fun decryptPacket(data: ByteArray): String =
     decryptAes(key, data).decodeToString()
 
 @Suppress("SameParameterValue")
