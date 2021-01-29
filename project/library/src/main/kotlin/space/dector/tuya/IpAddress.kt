@@ -1,3 +1,4 @@
 package space.dector.tuya
 
-typealias IpAddress = String
+
+public typealias IpAddress = String

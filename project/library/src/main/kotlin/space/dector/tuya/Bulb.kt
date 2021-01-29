@@ -12,27 +12,29 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.milliseconds
 
 
-data class DeviceConfiguration(
+private data class DeviceConfiguration(
     val ip: IpAddress,
     val deviceId: String,
     val localKey: String,
 )
 
-class Bulb(
-    val config: DeviceConfiguration,
+public class Bulb private constructor(
+    private val config: DeviceConfiguration,
 ) {
 
-    constructor(
+    public constructor(
         ip: IpAddress,
         deviceId: String,
         localKey: String,
-    ) : this(DeviceConfiguration(
-        ip = ip,
-        deviceId = deviceId,
-        localKey = localKey,
-    ))
+    ) : this(
+        DeviceConfiguration(
+            ip = ip,
+            deviceId = deviceId,
+            localKey = localKey,
+        )
+    )
 
-    fun turnOn() {
+    public fun turnOn() {
         send(
             command = Command.Control,
             commandData = JsonObject()
@@ -43,22 +45,26 @@ class Bulb(
 //            .set("t", Instant.now().toEpochMilli().toString())
 
                 .set("devId", config.deviceId)
-                .set("dps", JsonObject()
-                    .set("20", true)),
+                .set(
+                    "dps", JsonObject()
+                        .set("20", true)
+                ),
         )
     }
 
-    fun turnOff() {
+    public fun turnOff() {
         send(
             command = Command.Control,
             commandData = JsonObject()
                 .set("devId", config.deviceId)
-                .set("dps", JsonObject()
-                    .set("20", false)),
+                .set(
+                    "dps", JsonObject()
+                        .set("20", false)
+                ),
         )
     }
 
-    fun status(): DeviceStatus {
+    public fun status(): DeviceStatus {
         val responseString = send(
             command = Command.DpRequest,
             commandData = JsonObject()
@@ -94,7 +100,7 @@ class Bulb(
             localKey = config.localKey,
         )
 
-         println(packet.toHexString(" "))
+        //println(packet.toHexString(" "))
 
         val socket = Socket(config.ip, 6668)
         val out = socket.getOutputStream()
@@ -140,14 +146,14 @@ class Bulb(
     }
 }
 
-sealed class Feature {
+private sealed class Feature {
     data class Unknown(val id: String, val value: String) : Feature()
     data class OnOff(val value: Boolean) : Feature()
 
     companion object
 }
 
-fun Feature.Companion.byIdWithValue(id: String, value: JsonValue): Feature {
+private fun Feature.Companion.byIdWithValue(id: String, value: JsonValue): Feature {
     return when (id) {
         "20" ->
             Feature.OnOff(value.asBoolean())
@@ -159,11 +165,18 @@ fun Feature.Companion.byIdWithValue(id: String, value: JsonValue): Feature {
     }
 }
 
-fun List<Feature>.toDeviceStatus(): DeviceStatus = DeviceStatus(this)
+private fun List<Feature>.toDeviceStatus(): DeviceStatus = RealDeviceStatus(this)
 
-data class DeviceStatus(val features: List<Feature>) {
+public interface DeviceStatus {
 
-    fun isOn(): Boolean {
+    public fun isOn(): Boolean
+}
+
+private data class RealDeviceStatus(
+    val features: List<Feature>,
+) : DeviceStatus {
+
+    override fun isOn(): Boolean {
         return features
             .first { it is Feature.OnOff }
             .let { it as Feature.OnOff }

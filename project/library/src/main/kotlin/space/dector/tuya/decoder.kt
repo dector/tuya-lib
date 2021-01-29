@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec
 
 private val key = aesKey(md5("yGAdlopoPVldABfn"))
 
-fun decryptPacket(data: ByteArray): String =
+internal fun decryptPacket(data: ByteArray): String =
     decryptAes(key, data).decodeToString()
 
 @Suppress("SameParameterValue")
@@ -19,10 +19,10 @@ private fun md5(str: String): ByteArray = MessageDigest
     .getInstance("MD5")
     .digest(str.toByteArray())
 
-fun aesKey(key: String): Key = aesKey(key.toByteArray())
-fun aesKey(key: ByteArray): Key = SecretKeySpec(key, "AES")
+internal fun aesKey(key: String): Key = aesKey(key.toByteArray())
+internal fun aesKey(key: ByteArray): Key = SecretKeySpec(key, "AES")
 
-fun decryptAes(key: Key, data: ByteArray) = Cipher
+internal fun decryptAes(key: Key, data: ByteArray) = Cipher
     .getInstance("AES/ECB/PKCS5Padding")
     .apply { init(Cipher.DECRYPT_MODE, key) }
     .doFinal(data)

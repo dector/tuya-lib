@@ -4,7 +4,7 @@ import java.security.Key
 
 
 @ExperimentalUnsignedTypes
-fun decodeIncomingData(
+internal fun decodeIncomingData(
     content: ByteArray,
     key: Key,
 ): String {

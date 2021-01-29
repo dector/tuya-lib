@@ -9,6 +9,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import java.net.DatagramPacket
 import java.net.DatagramSocket
+import java.security.Key
+import java.security.MessageDigest
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
@@ -78,3 +82,20 @@ data class DetectedDevice(
     val udpIp: IpAddress,
     val rawJsonPayload: JsonObject?,
 )
+
+@Suppress("SameParameterValue")
+private fun md5(str: String): ByteArray = MessageDigest
+    .getInstance("MD5")
+    .digest(str.toByteArray())
+
+internal fun aesKey(key: String): Key = aesKey(key.toByteArray())
+internal fun aesKey(key: ByteArray): Key = SecretKeySpec(key, "AES")
+
+private val key = aesKey(md5("yGAdlopoPVldABfn"))
+internal fun decryptPacket(data: ByteArray): String =
+    decryptAes(key, data).decodeToString()
+
+internal fun decryptAes(key: Key, data: ByteArray) = Cipher
+    .getInstance("AES/ECB/PKCS5Padding")
+    .apply { init(Cipher.DECRYPT_MODE, key) }
+    .doFinal(data)

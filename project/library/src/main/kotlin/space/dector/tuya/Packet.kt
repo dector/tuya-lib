@@ -17,7 +17,7 @@ private const val PACKET_TAIL_SIZE = (0
     )
 
 @ExperimentalUnsignedTypes
-data class Packet(
+internal data class Packet(
     val command: Command,
     val payload: Payload,
     val localKey: String,
@@ -162,23 +162,23 @@ private fun prepareHexPayload(
     return newPayload
 }
 
-enum class Version(val id: String) {
+internal enum class Version(val id: String) {
     V3_3("3.3"),
 }
 
-enum class Command(val id: String) {
+internal enum class Command(val id: String) {
     Control("07"),
     DpRequest("0a"),
 }
 
-sealed class Extension {
+internal sealed class Extension {
     object None : Extension()
     data class WithVersion(val version: Version) : Extension()
 
     companion object
 }
 
-fun Extension.Companion.of(
+internal fun Extension.Companion.of(
     command: Command,
     version: Version,
 ): Extension {
@@ -190,14 +190,14 @@ fun Extension.Companion.of(
     }
 }
 
-fun Command.hex4Bytes(): String = id.padStart(8, '0')
+internal fun Command.hex4Bytes(): String = id.padStart(8, '0')
 
 @ExperimentalUnsignedTypes
-fun UInt.toHexString(bytes: Int): String = toInt()
+internal fun UInt.toHexString(bytes: Int): String = toInt()
     .toHexString(bytes = bytes)
 
 @ExperimentalUnsignedTypes
-fun Int.toHexString(bytes: Int): String {
+internal fun Int.toHexString(bytes: Int): String {
     val hexString = toUInt().toString(radix = 16)
     val expectedLength = bytes * 2
 

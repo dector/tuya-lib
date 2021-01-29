@@ -2,12 +2,12 @@ package space.dector.tuya
 
 
 @ExperimentalUnsignedTypes
-fun Packet.toHexString(
+internal fun Packet.toHexString(
     separator: String = "",
 ) = toHexData().toHexString(separator)
 
 @ExperimentalUnsignedTypes
-fun ByteArray.toHexString(
+internal fun ByteArray.toHexString(
     separator: String = "",
 ) = joinToString(separator) {
     it.toUByte()
@@ -16,7 +16,7 @@ fun ByteArray.toHexString(
 }
 
 @ExperimentalUnsignedTypes
-fun ByteArray.write(position: Int, data: String) {
+internal fun ByteArray.write(position: Int, data: String) {
     val filteredString = data.mapNotNull {
         it.toLowerCase().takeIf { c -> c in HEX_ALPHABET }
     }
@@ -32,7 +32,7 @@ fun ByteArray.write(position: Int, data: String) {
     write(position, bytes)
 }
 
-fun ByteArray.write(position: Int, data: ByteArray) {
+internal fun ByteArray.write(position: Int, data: ByteArray) {
     require(position + data.size <= this.size) {
         "Position ($position) + Data (${data.size}) should be less than buffer size (${this.size})"
     }
@@ -42,7 +42,7 @@ fun ByteArray.write(position: Int, data: ByteArray) {
     }
 }
 
-fun ByteArray.writeString(position: Int, str: String) {
+internal fun ByteArray.writeString(position: Int, str: String) {
     val bytes = str.encodeToByteArray()
 
     write(position, bytes)
