@@ -100,7 +100,7 @@ public class Bulb private constructor(
             localKey = config.localKey,
         )
 
-        //println(packet.toHexString(" "))
+        // log { packet.toHexString(" ") }
 
         val socket = Socket(config.ip, 6668)
         val out = socket.getOutputStream()
@@ -118,7 +118,7 @@ public class Bulb private constructor(
             var retries = 3
             while (retries > 0 && bytesRead <= 28) {
                 runCatching {
-                    println("Reading ($retries)")
+                    log { "Reading ($retries)" }
                     bytesRead = input.read(bytes)
                 }.onFailure {
                     retries--
@@ -128,16 +128,14 @@ public class Bulb private constructor(
 
             bytes = bytes.sliceArray(0 until bytesRead)
 
-            print("<< ")
-            println(bytes.toHexString())
+            log { "<< ${bytes.toHexString()}" }
 
-            println("Decoding:")
+            log { "Decoding:" }
             payload = decodeIncomingData(
                 content = bytes,
                 key = aesKey(config.localKey),
             )
-            println("Payload: $payload")
-            println()
+            log { "Payload: $payload\n" }
         }
 
         socket.close()

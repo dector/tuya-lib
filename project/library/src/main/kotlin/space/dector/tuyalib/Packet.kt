@@ -6,15 +6,15 @@ import javax.crypto.Cipher
 
 
 private const val PACKET_HEAD_SIZE = (0
-    + 4 // Prefix
-    + 4 // Sequences?
-    + 4 // Command
-    + 4 // Length
-    )
+        + 4 // Prefix
+        + 4 // Sequences?
+        + 4 // Command
+        + 4 // Length
+        )
 private const val PACKET_TAIL_SIZE = (0
-    + 4 // CRC
-    + 4 // Suffix
-    )
+        + 4 // CRC
+        + 4 // Suffix
+        )
 
 @ExperimentalUnsignedTypes
 internal data class Packet(
@@ -52,8 +52,8 @@ private fun createFramedPayload(
 ): ByteArray {
     val buf = ByteArray(
         PACKET_HEAD_SIZE +
-            payload.size +
-            PACKET_TAIL_SIZE
+                payload.size +
+                PACKET_TAIL_SIZE
     )
     var pos = 0
 
@@ -80,7 +80,7 @@ private fun createFramedPayload(
     // CRC
     val crc = crc32(buf, 0 until (buf.size - PACKET_TAIL_SIZE))
         .toHexString(bytes = 4)
-    println(crc)
+    log { crc }
     buf.write(pos, crc)
     pos += 4
 
@@ -136,8 +136,8 @@ private fun prepareHexPayload(
         is Extension.WithVersion -> {
             val extendedPayload = ByteArray(
                 encodedPayload.size +
-                    3 + // Protocol version
-                    12  // Just 12 bytes of zeros?
+                        3 + // Protocol version
+                        12  // Just 12 bytes of zeros?
             )
 
             var pos = 0
