@@ -1,5 +1,11 @@
 rootProject.name = "tuya-lib"
 
-include(
-    "project:library"
-)
+fun includePart(name: String) {
+    include(":$name")
+    project(":$name").apply {
+        projectDir = File("project/$name")
+    }
+}
+
+includePart("library")
+

@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project("project:library"))
+    implementation(project("library"))
     implementation(KotlinX.coroutines)
     implementation(Deps.minimalJson)
 
