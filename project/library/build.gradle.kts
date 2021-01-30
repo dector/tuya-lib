@@ -49,11 +49,15 @@ bintray {
         pkg.apply {
             repo = "tuya-lib"
             name = "library"
+
+            setLicenses("Apache-2.0")
             vcsUrl = "https://github.com/dector/tuya-lib"
 
             version.name = Publication.versionName
             version.vcsTag = Publication.vcsTag
         }
+
+        setPublications("library")
     } else {
         logger.warn("Bintray secrets not found")
     }
@@ -63,6 +67,10 @@ publishing {
     publications {
         create<MavenPublication>("library") {
             from(components["kotlin"])
+
+            groupId = project.group.toString()
+            artifactId = "library"
+            version = Publication.versionName
         }
     }
 
