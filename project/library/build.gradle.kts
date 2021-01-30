@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
 
     id("com.jfrog.bintray") version "1.8.5"
+    `maven-publish`
 }
 
 dependencies {
@@ -14,8 +15,8 @@ dependencies {
     testImplementation(Deps.kotest.assertions)
 }
 
-group = "space.dector.tuya"
-version = "0.1-SNAPSHOT"
+group = "space.dector.tuyalib"
+version = Publication.versionName
 
 repositories {
     jcenter()
@@ -55,5 +56,20 @@ bintray {
         }
     } else {
         logger.warn("Bintray secrets not found")
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("library") {
+            from(components["kotlin"])
+        }
+    }
+
+    repositories {
+        maven {
+            name = "localRepo"
+            url = uri("file://${rootDir}/repo")
+        }
     }
 }
