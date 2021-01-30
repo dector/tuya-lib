@@ -2,6 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
+
+    id("com.jfrog.bintray") version "1.8.5"
 }
 
 dependencies {
@@ -32,4 +34,26 @@ tasks.withType<KotlinCompile> {
 
 val test by tasks.getting(Test::class) {
     useJUnitPlatform()
+}
+
+bintray {
+    val secrets = runCatching {
+        rootDir.resolve(".secrets/bintray").readLines()
+    }.getOrNull()
+
+    if (secrets != null) {
+        user = secrets[0]
+        key = secrets[1]
+
+        pkg.apply {
+            repo = "tuya-lib"
+            name = "library"
+            vcsUrl = "https://github.com/dector/tuya-lib"
+
+            version.name = Publication.versionName
+            version.vcsTag = Publication.vcsTag
+        }
+    } else {
+        logger.warn("Bintray secrets not found")
+    }
 }

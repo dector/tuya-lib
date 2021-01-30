@@ -13,3 +13,5 @@ build/
 .kotlintest/
 
 data/devices/
+
+.secrets/
