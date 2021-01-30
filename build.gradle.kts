@@ -13,10 +13,9 @@ dependencies {
     testImplementation(Deps.kotest.assertions)
 }
 
-allprojects {
-    group = "space.dector.${rootProject.name}"
-    version = "0.1-SNAPSHOT"
+group = "space.dector.${rootProject.name}"
 
+allprojects {
     repositories {
         jcenter()
     }
