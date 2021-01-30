@@ -1,6 +1,6 @@
 @file:Suppress("EXPERIMENTAL_API_USAGE")
 
-package space.dector.tuya
+package space.dector.tuyalib
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject

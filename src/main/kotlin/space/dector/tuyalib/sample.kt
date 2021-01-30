@@ -1,4 +1,4 @@
-package space.dector.tuya
+package space.dector.tuyalib
 
 import com.eclipsesource.json.Json
 import kotlinx.coroutines.delay

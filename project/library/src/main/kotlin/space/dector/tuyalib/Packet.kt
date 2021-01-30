@@ -1,4 +1,4 @@
-package space.dector.tuya
+package space.dector.tuyalib
 
 import com.eclipsesource.json.JsonObject
 import java.util.zip.CRC32

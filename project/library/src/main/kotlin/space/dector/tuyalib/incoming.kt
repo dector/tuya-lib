@@ -1,4 +1,4 @@
-package space.dector.tuya
+package space.dector.tuyalib
 
 import java.security.Key
 
