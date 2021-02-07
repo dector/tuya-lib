@@ -41,7 +41,7 @@ dependencies {
 
 ### Controlling a bulb
 
-_You can check `sample/` directory for minimalistic library usage example._
+_You can check [`sample/`](sample/) directory for minimalistic library usage example._
 
 **WARNING:** Only bulb with firmware version 3.3 is supported for now.
 
