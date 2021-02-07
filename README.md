@@ -16,15 +16,26 @@ will not be removed.
 
 ## Installation
 
-1. Library is distributed via [MavenCentral](https://search.maven.org/artifact/space.dector.tuyalib/library). Ensure that you have is enabled in `build.gradle.kts`:
+1. Library is distributed via [MavenCentral](https://search.maven.org/artifact/space.dector.tuyalib/library). Ensure
+   that you have it enabled in `build.gradle.kts`:
 
 ```kotlin
 repositories {
     // ...
-
     mavenCentral()
 }
 ```
+
+<details><summary><i>For snapshots</i></summary>
+
+```kotlin
+repositories {
+    // ...
+    maven("https://maven.pkg.jetbrains.space/dector/p/tuya-lib/mvn")
+}
+```
+
+</details>
 
 2. Add `tuya-lib` to your dependencies:
 
@@ -34,6 +45,17 @@ dependencies {
     implementation("space.dector.tuyalib:library:0.1.0")
 }
 ```
+
+<details><summary><i>For snapshots</i></summary>
+
+```kotlin
+repositories {
+    // ...
+    implementation("space.dector.tuyalib:library:0.1.1-SNAPSHOT")
+}
+```
+
+</details>
 
 3. Sync your project with Gradle and you are done.
 

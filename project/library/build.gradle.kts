@@ -131,6 +131,24 @@ publishing {
             name = "localRepo"
             url = uri("file://${rootDir}/repo")
         }
+        maven {
+            name = "Snapshots"
+            url = uri("https://maven.pkg.jetbrains.space/dector/p/tuya-lib/mvn")
+
+            val secrets = runCatching {
+                rootDir
+                    .resolve(".secrets/space")
+                    .readLines()
+                    .filter(String::isNotBlank)
+            }.getOrNull()
+
+            if (secrets != null) {
+                credentials {
+                    username = secrets[0].trim()
+                    password = secrets[1].trim()
+                }
+            }
+        }
     }
 }
 
