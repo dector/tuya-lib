@@ -16,13 +16,13 @@ will not be removed.
 
 ## Installation
 
-1. Include [bintray repository](https://bintray.com/dector/tuya-lib/library) to your `build.gradle.kts`:
+1. Library is distributed via [MavenCentral](https://search.maven.org/artifact/space.dector.tuyalib/library). Ensure that you have is enabled in `build.gradle.kts`:
 
 ```kotlin
 repositories {
     // ...
 
-    maven("https://dl.bintray.com/dector/tuya-lib")
+    mavenCentral()
 }
 ```
 
@@ -62,7 +62,8 @@ val bulb = Bulb(
 bulb.turnOn()
 ```
 
-Use small delay between executing operations. Devices are slow and might skip your commands if you are sending them too fast.
+Use small delay between executing operations. Devices are slow and might skip your commands if you are sending them too
+fast.
 
 ## Changelog
 
@@ -70,11 +71,13 @@ See [CHANGELOG.md](CHANGELOG.md) file.
 
 ## License
 
-This project is licensed under the [Apache 2.0](https://choosealicense.com/licenses/apache-2.0/) License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the [Apache 2.0](https://choosealicense.com/licenses/apache-2.0/) License - see
+the [LICENSE.md](LICENSE.md) file for details.
 
 ## Acknowledgments
 
-This library might never exist without these awesome projects and people behind them that did all the work for reversing Tuya devices protocol:
+This library might never exist without these awesome projects and people behind them that did all the work for reversing
+Tuya devices protocol:
 
 - [tuya-convert](https://github.com/ct-Open-Source/tuya-convert)
 - [TuyaAPI](https://github.com/TuyaAPI/)
