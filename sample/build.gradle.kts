@@ -14,8 +14,8 @@ dependencies {
 }
 
 repositories {
+    mavenCentral()
     jcenter()
-    maven("https://dl.bintray.com/dector/tuya-lib")
 }
 
 tasks.withType<KotlinCompile> {
