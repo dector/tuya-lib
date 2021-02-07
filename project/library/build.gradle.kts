@@ -73,7 +73,7 @@ publishing {
                 }
 
                 // Include transitive dependencies
-                withXml {
+                /*withXml {
                     val dependenciesNode = asNode().appendNode("dependencies")
 
                     project.configurations.implementation.get().allDependencies.forEach {
@@ -82,7 +82,7 @@ publishing {
                         node.appendNode("artifactId", it.name)
                         node.appendNode("version", it.version)
                     }
-                }
+                }*/
             }
         }
     }
@@ -115,6 +115,28 @@ publishing {
     }
 }
 
+// Load signing
+run {
+    val secrets = runCatching {
+        rootDir
+            .resolve(".secrets/signing")
+            .readLines()
+            .filter(String::isNotBlank)
+    }.getOrNull()
+
+    if (secrets != null) {
+        ext["signing.keyId"] = secrets[0].trim()
+        ext["signing.password"] = secrets[1].trim()
+        ext["signing.secretKeyRingFile"] = File(".").resolve(secrets[2].trim())
+    } else {
+        logger.warn("Signing secrets not found")
+    }
+}
+
 signing {
+    setRequired({
+        gradle.taskGraph.allTasks.any { it.name.startsWith("publish") }
+    })
+
     sign(publishing.publications)
 }
