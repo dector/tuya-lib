@@ -20,7 +20,7 @@ group = "space.dector.tuyalib"
 version = Publication.versionName
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 kotlin {

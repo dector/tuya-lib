@@ -17,7 +17,7 @@ group = "space.dector.${rootProject.name}"
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 
     tasks.withType<KotlinCompile> {

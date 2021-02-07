@@ -15,7 +15,6 @@ dependencies {
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 tasks.withType<KotlinCompile> {
