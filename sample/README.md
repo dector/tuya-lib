@@ -8,7 +8,7 @@
 
     - device IP in your local network;
     - device ID;
-    - AES secret key for local interations (instructions **TBD**).
+    - AES secret key for local interactions (instructions **TBD**).
 
 1. Once you configured your device, run `./gradlew run` again.
 
