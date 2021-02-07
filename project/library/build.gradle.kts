@@ -44,8 +44,13 @@ val sourcesJar = tasks.create("sourcesJar", Jar::class.java) {
     from(sourceSets["main"].withConvention(KotlinSourceSet::class) { kotlin.srcDirs })
 }
 
+val javadocJar = tasks.create("javadocJar", Jar::class.java) {
+    archiveClassifier.set("javadoc")
+}
+
 artifacts {
     archives(sourcesJar)
+    archives(javadocJar)
 }
 
 publishing {
@@ -58,6 +63,7 @@ publishing {
             version = Publication.versionName
 
             artifact(sourcesJar)
+            artifact(javadocJar)
 
             pom {
                 name.set("library")
