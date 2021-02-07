@@ -1,0 +1,7 @@
+.gradle/
+out/
+
+.idea/
+build/
+
+device.json

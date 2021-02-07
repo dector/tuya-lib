@@ -1,0 +1,5 @@
+{
+  "ip": "<DEVICE IP IN LOCAL NETWORK>",
+  "devId": "<DEVICE ID (20 symbols)>",
+  "localKey": "<DEVICE AES LOCAL KEY (16 symbols)>"
+}
