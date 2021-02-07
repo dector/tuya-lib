@@ -18,10 +18,20 @@ private data class DeviceConfiguration(
     val localKey: String,
 )
 
+/**
+ * Local bulb device class-controller.
+ */
 public class Bulb private constructor(
     private val config: DeviceConfiguration,
 ) {
 
+    /**
+     * Create new bulb to control.
+     *
+     * @param ip device's local network IP
+     * @param deviceId 20-symbol (HEX) device id
+     * @param localKey 16-symbol (HEX) device-specific AES key used to decrypt payload
+     */
     public constructor(
         ip: IpAddress,
         deviceId: String,
@@ -34,6 +44,9 @@ public class Bulb private constructor(
         )
     )
 
+    /**
+     * Turn on the bulb.
+     */
     public fun turnOn() {
         send(
             command = Command.Control,
@@ -52,6 +65,9 @@ public class Bulb private constructor(
         )
     }
 
+    /**
+     * Turn off the bulb.
+     */
     public fun turnOff() {
         send(
             command = Command.Control,
@@ -64,6 +80,9 @@ public class Bulb private constructor(
         )
     }
 
+    /**
+     * Fetch current status of the bulb.
+     */
     public fun status(): DeviceStatus {
         val responseString = send(
             command = Command.DpRequest,
@@ -165,8 +184,14 @@ private fun Feature.Companion.byIdWithValue(id: String, value: JsonValue): Featu
 
 private fun List<Feature>.toDeviceStatus(): DeviceStatus = RealDeviceStatus(this)
 
+/**
+ * Device state at a certain point of time.
+ */
 public interface DeviceStatus {
 
+    /**
+     * Returns `true` when device is turned on.
+     */
     public fun isOn(): Boolean
 }
 
