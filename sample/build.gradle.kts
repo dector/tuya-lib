@@ -2,6 +2,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.4.21"
+
+    application
 }
 
 dependencies {
@@ -22,4 +24,8 @@ tasks.withType<KotlinCompile> {
         "-Xopt-in=kotlin.time.ExperimentalTime",
         "-Xopt-in=kotlin.RequiresOptIn"
     )
+}
+
+application {
+    mainClass.set("MainKt")
 }
