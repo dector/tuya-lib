@@ -3,17 +3,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import space.dector.tuyalib.Bulb
 import java.io.File
+import kotlin.system.exitProcess
 import kotlin.time.seconds
 
 
 fun main() {
-    val device = Json.parse(File("../data/devices/1.json").readText())
-        .asObject()
+    val config = readDeviceConfiguration()
 
     val bulb = Bulb(
-        ip = device["ip"].asString(),
-        deviceId = device["devId"].asString(),
-        localKey = device["localKey"].asString(),
+        ip = config.ip,
+        deviceId = config.deviceId,
+        localKey = config.localKey,
     )
 
     runBlocking {
@@ -53,3 +53,41 @@ fun main() {
         }
     }
 }
+
+private fun readDeviceConfiguration(): Config {
+    val file = File("device.json")
+    if (!file.exists()) {
+        File("device.json.template").copyTo(file)
+
+        println(
+            "We created 'device.json' file.\n" +
+                "Please edit it and provide configuration for your device."
+        )
+        exitProcess(1)
+    }
+
+    val json = Json.parse(file.readText())
+        .asObject()
+
+    val config = Config(
+        ip = json["ip"].asString(),
+        deviceId = json["devId"].asString(),
+        localKey = json["localKey"].asString(),
+    )
+
+    if (listOf(config.ip, config.deviceId, config.localKey).any { it.startsWith("<") }) {
+        System.err.println(
+            "ERROR. Incorrect device configuration.\n" +
+                "Please set 'device.json' file with your values."
+        )
+        exitProcess(1)
+    }
+
+    return config
+}
+
+data class Config(
+    val ip: String,
+    val deviceId: String,
+    val localKey: String,
+)
