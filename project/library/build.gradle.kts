@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -37,6 +38,16 @@ val test by tasks.getting(Test::class) {
     useJUnitPlatform()
 }
 
+val sourcesJar = tasks.create("sourcesJar", Jar::class.java) {
+    archiveClassifier.set("sources")
+
+    from(sourceSets["main"].withConvention(KotlinSourceSet::class) { kotlin.srcDirs })
+}
+
+artifacts {
+    archives(sourcesJar)
+}
+
 publishing {
     publications {
         create<MavenPublication>("library") {
@@ -45,6 +56,8 @@ publishing {
             groupId = project.group.toString()
             artifactId = "library"
             version = Publication.versionName
+
+            artifact(sourcesJar)
 
             pom {
                 name.set("library")
