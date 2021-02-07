@@ -1,8 +1,7 @@
-package space.dector.tuyalib
-
 import com.eclipsesource.json.Json
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import space.dector.tuyalib.Bulb
 import java.io.File
 import kotlin.time.seconds
 
