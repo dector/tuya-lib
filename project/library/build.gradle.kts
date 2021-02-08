@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URL
 
 plugins {
     kotlin("jvm")
+    id("org.jetbrains.dokka") version "1.4.0"
 
     `maven-publish`
     signing
@@ -21,6 +23,14 @@ version = Publication.versionName
 
 repositories {
     mavenCentral()
+    jcenter {
+        content {
+            includeGroup("org.jetbrains.dokka")
+            includeGroup("org.jetbrains.kotlinx")
+        }
+    }
+    maven("https://dl.bintray.com/korlibs/korlibs")
+    maven("https://dl.bintray.com/jetbrains/markdown")
 }
 
 kotlin {
@@ -44,13 +54,35 @@ val sourcesJar = tasks.create("sourcesJar", Jar::class.java) {
     from(sourceSets["main"].withConvention(KotlinSourceSet::class) { kotlin.srcDirs })
 }
 
-val javadocJar = tasks.create("javadocJar", Jar::class.java) {
+val dokkaJar = tasks.create("dokkaJar", Jar::class.java) {
+    dependsOn("dokkaHtml")
+    from("$buildDir/dokka/html")
+
     archiveClassifier.set("javadoc")
+}
+
+tasks {
+    dokkaHtml {
+        dokkaSourceSets {
+            configureEach {
+                reportUndocumented.set(true)
+                platform.set(org.jetbrains.dokka.Platform.jvm)
+
+                sourceLink {
+                    localDirectory.set(file("src/main/kotlin"))
+                    remoteUrl.set(
+                        URL("https://github.com/dector/tuya-lib/tree/master/project/library/src/main/kotlin/")
+                    )
+                    remoteLineSuffix.set("#L")
+                }
+            }
+        }
+    }
 }
 
 artifacts {
     archives(sourcesJar)
-    archives(javadocJar)
+    archives(dokkaJar)
 }
 
 publishing {
@@ -63,7 +95,7 @@ publishing {
             version = Publication.versionName
 
             artifact(sourcesJar)
-            artifact(javadocJar)
+            artifact(dokkaJar)
 
             pom {
                 name.set("library")
