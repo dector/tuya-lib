@@ -25,6 +25,9 @@ public class Bulb private constructor(
     private val config: DeviceConfiguration,
 ) {
 
+    /** Bulb IP */
+    public val ip: IpAddress get() = config.ip
+
     /**
      * Create new bulb to control.
      *
