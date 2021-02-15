@@ -1,5 +1,12 @@
 # library
 
+
+## 0.1.1 (SNAPSHOT)
+
+### Added
+
+- `Bulb.ip` property return configured bulb IP.
+
 ## 0.1.0
 
 Initial release.
