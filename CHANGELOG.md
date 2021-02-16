@@ -7,6 +7,10 @@
 
 - `Bulb.ip` property return configured bulb IP.
 
+### Changed
+
+- Kotlin version updated to `1.4.30`.
+
 ## 0.1.0
 
 Initial release.
