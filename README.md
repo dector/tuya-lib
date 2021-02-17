@@ -63,7 +63,9 @@ repositories {
 
 ### Controlling a bulb
 
-_You can check [`sample/`](sample/) directory for minimalistic library usage example._
+_You can check [sample/](sample/) directory for minimalistic library usage example._
+
+_Simple android app example is available in [another repository](https://github.com/dector/ghosty)._
 
 **WARNING:** Only bulb with firmware version 3.3 is supported for now.
 
