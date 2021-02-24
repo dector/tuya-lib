@@ -3,6 +3,10 @@
 
 ## 0.1.2 (SNAPSHOT)
 
+### Fixed
+
+- Don't propagate socket error to caller. Fail silently.
+
 ## 0.1.1
 
 ### Added

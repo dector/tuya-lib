@@ -49,6 +49,8 @@ public class Bulb private constructor(
 
     /**
      * Turn on the bulb.
+     *
+     * Fail silently if device is not reachable.
      */
     public fun turnOn() {
         send(
@@ -70,6 +72,8 @@ public class Bulb private constructor(
 
     /**
      * Turn off the bulb.
+     *
+     * Fail silently if device is not reachable.
      */
     public fun turnOff() {
         send(
@@ -85,6 +89,8 @@ public class Bulb private constructor(
 
     /**
      * Fetch current status of the bulb.
+     *
+     * Fail silently if device is not reachable.
      */
     public fun status(): DeviceStatus {
         val responseString = send(
@@ -95,15 +101,19 @@ public class Bulb private constructor(
             expectResponse = true,
         )
 
-        val response = Json.parse(responseString).asObject()
+        return if (responseString is Result.Ok) {
+            val response = Json.parse(responseString.value).asObject()
 
-        return response["dps"].asObject()
-            .map { member ->
-                Feature.byIdWithValue(
-                    id = member.name,
-                    value = member.value,
-                )
-            }.toDeviceStatus()
+            response["dps"].asObject()
+                .map { member ->
+                    Feature.byIdWithValue(
+                        id = member.name,
+                        value = member.value,
+                    )
+                }
+        } else {
+            emptyList()
+        }.toDeviceStatus()
     }
 
 //    fun state() {
@@ -115,7 +125,7 @@ public class Bulb private constructor(
         command: Command,
         commandData: JsonObject,
         expectResponse: Boolean = false,
-    ): String {
+    ): Result<String> {
         val packet = Packet(
             command = command,
             payload = Packet.Payload(commandData),
@@ -124,45 +134,51 @@ public class Bulb private constructor(
 
         // log { packet.toHexString(" ") }
 
-        val socket = Socket(config.ip, 6668)
-        val out = socket.getOutputStream()
-        out.write(packet.toHexData())
+        val result = runCatching {
+            var payload = ""
 
-        var payload = ""
-        if (expectResponse) runBlocking {
-            delay(50.milliseconds)
+            Socket(config.ip, 6668).use { socket ->
+                val out = socket.getOutputStream()
+                out.write(packet.toHexData())
 
-            val input = socket.getInputStream()
+                if (expectResponse) runBlocking {
+                    delay(50.milliseconds)
 
-            var bytes = ByteArray(1024)
+                    val input = socket.getInputStream()
 
-            var bytesRead = 0
-            var retries = 3
-            while (retries > 0 && bytesRead <= 28) {
-                runCatching {
-                    log { "Reading ($retries)" }
-                    bytesRead = input.read(bytes)
-                }.onFailure {
-                    retries--
-                    delay(100.milliseconds)
+                    var bytes = ByteArray(1024)
+
+                    var bytesRead = 0
+                    var retries = 3
+                    while (retries > 0 && bytesRead <= 28) {
+                        runCatching {
+                            log { "Reading ($retries)" }
+                            bytesRead = input.read(bytes)
+                        }.onFailure {
+                            retries--
+                            delay(100.milliseconds)
+                        }
+                    }
+
+                    bytes = bytes.sliceArray(0 until bytesRead)
+
+                    log { "<< ${bytes.toHexString()}" }
+
+                    log { "Decoding:" }
+                    payload = decodeIncomingData(
+                        content = bytes,
+                        key = aesKey(config.localKey),
+                    )
+                    log { "Payload: $payload\n" }
                 }
             }
 
-            bytes = bytes.sliceArray(0 until bytesRead)
-
-            log { "<< ${bytes.toHexString()}" }
-
-            log { "Decoding:" }
-            payload = decodeIncomingData(
-                content = bytes,
-                key = aesKey(config.localKey),
-            )
-            log { "Payload: $payload\n" }
+            payload
         }
 
-        socket.close()
-
-        return payload
+        return result
+            .map { Result.Ok(it) }
+            .getOrElse { Result.Fail(it) }
     }
 }
 
